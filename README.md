@@ -1,6 +1,6 @@
 # Overview
 ## Introduction
-I'm staring this proiject to integrate a wired printer into my home network by connecting it to my server. this project is meant to serve a dual purposes: Making sure my desk isnt cluttered with a printer, and enhancing my understanding of networking and server configurations.
+I'm starting this project to integrate a wired printer into my home network by connecting it to my server. This project is meant to serve dual purposes: ensuring my desk isn't cluttered with a printer and enhancing my understanding of networking and server configurations.
 
 ## Project Objectives/Goals
 * <b>Printer Integration:</b> Physically connect the printer to the server for network-wide accessibility.
@@ -12,7 +12,7 @@ I'm staring this proiject to integrate a wired printer into my home network by c
 
 Instead of opting for off-the-shelf solutions, I've chosen to build and deploy the system myself. This approach allows me to have more interesting and technically complex learning opportunities.
 
-_<b>NOTE</b>:_  Currently, this document serves as a planning blueprint. It will evolve into a formalized documentation as the project progresses.
+_<b>NOTE</b>:_  Currently, this document serves as a planning blueprint. It will evolve into formalized documentation as the project progresses.
 
 # Planning
 <b>General Project Information:</b>
@@ -21,65 +21,68 @@ _<b>NOTE</b>:_  Currently, this document serves as a planning blueprint. It will
 * Using Python 3.X, Shell, And ... 
 
 
-The main compntes I need to do Research/Create on are:
+The main components I need to research/create are:
 ## Server Prerequisites/Setup
 * ### Drivers
-Using my Arch testing environment, I have concluded that using the AUR package for a close Canon TS Pixima driver works the best. It seems to detect the printer (if currently connected) and install compataible drivers. This could be misguided...but it seemed to work once. Also, a plus to this package is it installs all the other required packages to CLI print (if not already installed). 
+    Using my Arch testing environment, I have found that using the AUR package for a Canon TS Pixma driver works the best. It appears to detect the printer (when connected) and install compatible drivers. This approach might be somewhat experimental, but it has worked at least once. Another benefit of this package is that it installs all the other required packages for command-line printing, if they are not already installed.
 
-This is the install command:
-```
-yay -S canon-pixma-ts5055-complete
-``` 
+    This is the install command:
+    ```
+    yay -S canon-pixma-ts5055-complete
+    ``` 
 
 * ### Required Packages
-```
-yay -S cups
-```
+    ```
+    yay -S cups
+    ```
 
 * ### Setup
-#### Enable/Start/Verify the Cups service
-```
-sudo systemctl enable cups.service
-sudo systemctl start cups.service
-sudo systemctl status cups.service
-```
+    #### Enable/Start/Verify the Cups service
+    ```
+    sudo systemctl enable cups.service
+    sudo systemctl start cups.service
+    sudo systemctl status cups.service
+    ```
 
-#### Add printer to Cups
-In a traditional enironment it us easy to go to ```http://localhost:631/``` and use the Cups GUI to connect the printer. However, the fact it's a headless server makes this not as optimal (although possible) so my <b>@TODO</b> is to make sure it is possible and document how to connect it using the 'lpadmin' CLI toolset 
+    #### Add printer to Cups
+    In a traditional environment, it's easy to go to ```http://localhost:631/``` and use the CUPS GUI to connect the printer. However, the fact that it's a headless server makes this less optimal (though still possible). Therefore, my <b>@TODO</b> is to ensure it is possible and document how to connect it using the `lpadmin` CLI toolset.
 
 ## Client Prerequisites/Setup
-The only real reqirment is Python 3.X (and ssh...I think),  atleast for CLI program. 
+The only real requirement is Python 3.x (and SSH, I think), at least for the CLI program.
 
-## Server Side Software Struture/Planning
-* ### Python Spesifications/Packages
+## Server Side Software Structure/Planning
+* ### Python Specifications/Packages
     * subprocess 
 * ### Projected Workflow
-    1. Constantly scan specified directory (And a printer specifcation file, Type is TBD)
-    2. Collect file location and printing specifications
-    3. Use subproccess to call an LPR command given the specs 
-    4. Execute print job
-    5. Remove related files
+    1. Continuously scan a specified directory (and possibly a printer specification file, type to be determined).
+        * Currently in a file named `PrintPool`. I just put it in the Server directory. <B>(@TODO HOW DOES THIS SCALE?)</b><br><i><b>NOTE:</b> It needs to be a full path <b>(@TODO FOR DEPLOYMENT MAYBE A PROXY FILE LOCATION?)</b></i>
+    2. Collect the file locations and printing specifications from the scanned directory and files.
+        * The naming convention will be a a random 4 digit number from 1001-9999, I chose the lower bound so that the ids will never start with a 0. Im calling it the `PPID` for (PRE PRINT ID) because it is not the id that the LPR call will assign it so it is for internal proccessing purpose only.
+        * There will be a `PPID.json` and a `PPID.pdf` in the file for every printable file. the pdf will be formatted and generated on the client side. Choose pdf because there seems to be some robust toolkits in python for pdf manipulations
+    3. Use subprocess to call an LPR command based on the collected specifications.
+    4. Execute the print job using the specified printer and settings.
+    5. Remove the related files from the directory after successful printing.
 
-## Client Side Software Struture/Planning
-* ### Python Spesifications/Packages
-None ATM
+## Client Side Software Structure/Planning
+* ### Python Specifications/Packages
+    None ATM
 * ### Projected Workflow
-    1. Have a display of example command structure (of my choosing)
-    2. Get input of command
-    3. Compile it to a file
-    4. Do any document pre-proccessing (Make it B&W, page slicing, etc)
+    1. Design a display showing an example command structure (of your choice) to guide users on input format and options.
+    2. Prompt the user to input their command according to the specified structure.
+    3. Compile the user-input command into a file or data structure for further processing.
+    4. Implement document preprocessing tasks such as converting to black and white, slicing pages, etc., based on the command specifications.
     5. <b>!!Push to server Using SFTP</b>
 
 ## File Transfer Protocols/Setup
 * ### Secure FTP Protocol
-    I belive the usage of SFTP is most likley the most secure way to execute this. However, I can set up a rest API but then I would be using http and making it secure would be a little more difficult. this way I can keep it internal or external using a already secured method. this approach could change
+    I believe the usage of SFTP is most likely the most secure way to execute this. However, I can set up a rest API but then I would be using http and making it secure would be a little more difficult. this way I can keep it internal or external using a already secured method. this approach could change
 * ### Other Security Practices
-None ATM
+    None ATM
 
 ## Deployment Protocols/Setup
 * ### Utilization of Protocols/Kernel Programs
-My plan is to setup the Server side python client in a Daemon. Havent really looked into how, but it should be possible to configure it as a service. Apart of the Deployment protocal is to correctly configure a secured SSH service on the server in order to facilite SFTP
+    My plan is to setup the Server side python client in a Daemon. I have not really looked into how, but it should be possible to configure it as a service. Apart of the Deployment protocol is to correctly configure a secured SSH service on the server in order to facilitate SFTP
 * ### Resource Usage Analysis/Managment
-No Idea ATM
+    No Idea ATM
 * ### Other Security Practices
-The Cups service opens the 631 port for its GUI. this could expose the box to a vulnerablity. <b>@TODO</b> possibly find a way to disble it or block it from outside access during deployment 
+    The Cups service opens the 631 port for its GUI. this could expose the box to a vulnerability. <b>@TODO</b> possibly find a way to disable it or block it from outside access during deployment  
