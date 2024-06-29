@@ -17,7 +17,7 @@ _<b>NOTE</b>:_  Currently, this document serves as a planning blueprint. It will
 # Planning
 <b>General Project Information:</b>
 * Headless Arch Linux Server Operation System
-* Canon Pixma TS202 Wired Printer
+* Canon Pixma TS202 Wired Printer (Only One Sided Printing, But WHO CARES)
 * Using Python 3.X, Shell, And ... 
 
 
@@ -60,7 +60,21 @@ The only real requirement is Python 3.x (and SSH, I think), at least for the CLI
         * The naming convention will be a a random 4 digit number from 1001-9999, I chose the lower bound so that the ids will never start with a 0. Im calling it the `PPID` for (PRE PRINT ID) because it is not the id that the LPR call will assign it so it is for internal proccessing purpose only.
         * There will be a `PPID.json` and a `PPID.pdf` in the file for every printable file. the pdf will be formatted and generated on the client side. Choose pdf because there seems to be some robust toolkits in python for pdf manipulations
     3. Use subprocess to call an LPR command based on the collected specifications.
+        * There is now a function that will take in contect paramters and an technical Options object and will convert them to an actuall runabale LPR command.
+            * Options Object - it comes down to a list of codes that indicate a certain  options. this will satart off small and directed but I will expand to add more options as time goes on. Option and LPR arg conflicts will not be an issue ons erver side, as it will be handled on client side
+            Here is a list of current codes <br>
+                - coll - collate
+                - sid1 - one-sided
+                - sid2L - two-sided-long-edge
+                - sid2S - two-sided-short-edge
+                - papLet - media=letter
+                - papLeg - media=legal
+                - papA4 - media=A4
+                - papA3 - media=A3
+                - papTab - media=tabloid
+                - papExec - media=executive
     4. Execute the print job using the specified printer and settings.
+        * I could explain how it works here, right now. But Imma just say read the code, there are gonna be many layers of stuff on top of it that will make this explantion useless
     5. Remove the related files from the directory after successful printing.
 
 ## Client Side Software Structure/Planning
@@ -70,7 +84,7 @@ The only real requirement is Python 3.x (and SSH, I think), at least for the CLI
     1. Design a display showing an example command structure (of your choice) to guide users on input format and options.
     2. Prompt the user to input their command according to the specified structure.
     3. Compile the user-input command into a file or data structure for further processing.
-    4. Implement document preprocessing tasks such as converting to black and white, slicing pages, etc., based on the command specifications.
+    4. Implement document preprocessing tasks such as converting to black and white, slicing pages, etc., based on the command specifications. NOTE: It will only be color and page splicing the rest will be handled by the server.
     5. <b>!!Push to server Using SFTP</b>
 
 ## File Transfer Protocols/Setup
